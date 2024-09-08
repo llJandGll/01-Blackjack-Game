@@ -1,8 +1,7 @@
 (() => {
   let decks = [];
 
-  let playerPoints = 0,
-      computerPoints= 0;
+  let playerPoints = [];
 
   const typeCards = ["C","D","H","S"], 
         especialsCards = ["A","J","Q","K"];
@@ -12,41 +11,45 @@
 
   const btnGetCard = document.querySelector("#btnGetCard"),
         btnNewGame = document.querySelector("#btnNewGame"),
-        btnStopGame = document.querySelector("#btnStopGame"),
-        divPlayer = document.querySelector("#player-cards"),
-        divComputer = document.querySelector("#computer-cards"),
-        small = document.querySelectorAll("small");
+        btnStopGame = document.querySelector("#btnStopGame")
+        
 
-
-
+  const divPlayerCards = document.querySelectorAll(".divCartas"),
+                small = document.querySelectorAll("small");
   //Functions
 
-  const initializeGame = () => {
+  const initializeGame = ( numPlayers = 2) => {
     createDeck();
+    playerPoints = [];
+    for (let i = 0; i < numPlayers; i++) {
+      playerPoints.push(0);
+    }
+    console.log(playerPoints);
+    
+    small.forEach((value) => value.innerText = 0);
+
+    divPlayerCards.forEach( (value) => value.innerHTML = "");
+
+    btnGetCard.disabled = false;
+    btnStopGame.disabled = false;
   };
 
   btnGetCard.addEventListener("click", () => {
-    if (decks.length == 0) initializeGame(); 
     const card = getCard( decks );
     const numberCard = getValueCard(card);
     //*Add Card
-    let img = document.createElement("img");
-    img.src = `assets/poker-cards/cards/${card}.png`;
-    img.classList = "card";
-    divPlayer.append(img);
-
+    createCard(0 , card);
     //* Add points
-
-    small[0].innerText = (playerPoints += numberCard);
+    const points = accumulatePoints( 0 , numberCard);
     //* Condicionales
 
-    if (playerPoints > 21) {
-      computerTurn(playerPoints);
+    if (points > 21) {
+      computerTurn(points);
       btnGetCard.disabled = true;
       btnStopGame.disabled = true;
       
-    }else if (playerPoints === 21) {
-      computerTurn(playerPoints);
+    }else if (points === 21) {
+      computerTurn(points);
       btnGetCard.disabled = true;
       btnStopGame.disabled = true;
     }
@@ -55,32 +58,16 @@
   });
 
   btnStopGame.addEventListener("click", () => {
-    
-    if (decks.length <= 0) {
-      alert("No se puede detener sin una carta previa");
-      return;
-    }
+    const [firstPlayerPoints] =playerPoints
     btnGetCard.disabled = true;
     btnStopGame.disabled = true;
-    computerTurn(playerPoints);
-    btnGetCard.disabled = true;
+    computerTurn(firstPlayerPoints);
   });
 
 
   btnNewGame.addEventListener("click", () => {
-    console.clear();
-    decks = [];
-    
-    playerPoints = 0;
-    computerPoints = 0;
-    small[0].innerText = playerPoints;
-    small[1].innerText = computerPoints;
-    divPlayer.innerHTML = "";
-    divComputer.innerHTML="";
 
-
-    btnGetCard.disabled = false;
-    btnStopGame.disabled = false;
+   initializeGame();
   });
 
 
@@ -113,48 +100,37 @@
     }
   };
 
-
-
-
-  const getCard = ( deck = [] ) => (deck.length <= 0) ? 
-                                    console.error("No hay cartas para quitar") :
-                                    deck.shift();
+  const getCard = ( deck = [] ) => deck.shift();
 
   const getValueCard = ( card = "" ) => {
     let valueNumeric = card.substring(0, card.length - 1);
-    
-
     return (isNaN(valueNumeric) ? 
           (valueNumeric == "A") ? 
           11 : 10 : valueNumeric * 1);
   };
 
+  const createCard = ( turn, card ) => {
+    let img = document.createElement("img");
+    img.src = `assets/poker-cards/cards/${card}.png`;
+    img.classList = "card";
+    divPlayerCards[turn].append(img);
+  };
 
-  const computerTurn = ( totalPoints = 0 ) => {
+
+  
+  const accumulatePoints = ( turn , valueCard ) => {
+    playerPoints[turn] =   playerPoints[turn] + valueCard;
+    small[turn].innerText = playerPoints[turn];
+    return playerPoints[turn];
+  };
+
+  const gameWinner = () => {
+    const [pintsPlayer , computerPoints] = playerPoints;
     
-    do {
-      let card = getCard(decks);
-      let numberCard = getValueCard(card); 
-      computerPoints += numberCard
-
-      let img = document.createElement("img");
-      img.classList = "card";
-      img.src = `assets/poker-cards/cards/${card}.png`;
-      divComputer.append(img);
-      
-      small[1].innerText =  computerPoints;
-
-      if (totalPoints > 21) {
-
-        break;
-      }
-      
-    } while ( (computerPoints < totalPoints) && (totalPoints <= 21));
-
     setTimeout(() => {
-      if (computerPoints === totalPoints) {
+      if (computerPoints === pintsPlayer) {
         alert("Empates");
-      }else if (totalPoints > 21 ) {
+      }else if (pintsPlayer > 21 ) {
         alert("Computadora Win");
       }else if (computerPoints > 21) {
         alert("Player Win");
@@ -162,7 +138,21 @@
         alert("Computer Win")
       }
     }, 500);
+  };
 
+
+
+  const computerTurn = ( totalPoints = 0 ) => {
+    let computerPoints = 0;
+    
+    do {
+      let card = getCard(decks);
+      let numberCard = getValueCard(card); 
+      computerPoints = accumulatePoints(playerPoints.length - 1, numberCard);
+      createCard(playerPoints.length - 1 , card); 
+    } while ( (computerPoints < totalPoints) && (totalPoints <= 21));
+
+    gameWinner();
 
   };
 
