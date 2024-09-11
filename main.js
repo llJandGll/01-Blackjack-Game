@@ -111,7 +111,7 @@ import "./style.css";
 
   const createCard = ( turn, card ) => {
     let img = document.createElement("img");
-    img.src = `assets/poker-cards/cards/${card}.png`;
+    img.src = `public/poker-cards/cards/${card}.png`;
     img.classList = "card";
     divPlayerCards[turn].append(img);
   };
