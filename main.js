@@ -25,7 +25,6 @@ import "./style.css";
     for (let i = 0; i < numPlayers; i++) {
       playerPoints.push(0);
     }
-    console.log(playerPoints);
     
     small.forEach((value) => value.innerText = 0);
 
