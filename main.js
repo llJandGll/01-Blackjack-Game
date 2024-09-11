@@ -111,7 +111,7 @@ import "./style.css";
 
   const createCard = ( turn, card ) => {
     let img = document.createElement("img");
-    img.src = `https://blackjack-m95pvdxu8-lljandglls-projects.vercel.app/public/poker-cards/cards/${card}.png`;
+    img.src = `assets/poker-cards/cards/${card}.png`;
     img.classList = "card";
     divPlayerCards[turn].append(img);
   };
